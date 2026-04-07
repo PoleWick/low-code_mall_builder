@@ -1,0 +1,33 @@
+.canvas {
+  min-height: 600px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  position: relative;
+  transition: outline 0.15s;
+}
+
+.dropOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(255, 77, 79, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dropHint {
+  color: #ff4d4f;
+  font-size: 13px;
+  background: #fff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.emptyState {
+  padding: 60px 20px;
+  text-align: center;
+}

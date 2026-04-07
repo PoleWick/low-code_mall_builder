@@ -1,0 +1,45 @@
+.wrapper {
+  position: relative;
+  cursor: pointer;
+  transition: outline 0.15s;
+}
+
+.actionBar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  z-index: 20;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.actionBtnDanger {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.typeLabel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #ff4d4f;
+  color: #fff;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 0 0 4px 0;
+  pointer-events: none;
+}

@@ -1,0 +1,15 @@
+.outer {
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.text {
+  color: #bbb;
+  font-size: 14px;
+}

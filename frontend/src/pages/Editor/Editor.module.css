@@ -1,0 +1,67 @@
+.editorLayout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.editorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 16px;
+  height: 56px;
+  line-height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.titleInput {
+  font-size: 15px;
+  font-weight: 500;
+  max-width: 260px;
+}
+
+.leftSider {
+  border-right: 1px solid #f0f0f0;
+  overflow-y: auto;
+  height: calc(100vh - 56px);
+}
+
+.canvasArea {
+  background: #f0f2f5;
+  overflow-y: auto;
+  height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.rightSider {
+  border-left: 1px solid #f0f0f0;
+  overflow-y: auto;
+  height: calc(100vh - 56px);
+}
+
+.loadingScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.unsavedHint {
+  font-size: 12px;
+  white-space: nowrap;
+  color: #999;
+}

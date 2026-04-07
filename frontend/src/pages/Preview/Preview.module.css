@@ -1,0 +1,19 @@
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.outer {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.inner {
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #fff;
+}
