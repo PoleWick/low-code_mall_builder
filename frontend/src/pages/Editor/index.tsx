@@ -14,6 +14,7 @@ import ComponentPanel from './components/ComponentPanel'
 import EditorCanvas from './components/EditorCanvas'
 import PropsPanel from './components/PropsPanel'
 import PageSettingsPanel from './components/PageSettingsPanel'
+import ExportModal from './components/ExportModal'
 import styles from './Editor.module.css'
 
 const { Header, Sider, Content } = Layout
@@ -25,6 +26,7 @@ const Editor = () => {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
   const message = useMessage()
   const { modal } = App.useApp()
 
@@ -75,14 +77,17 @@ const Editor = () => {
   }
 
   const handleExport = () => {
-    const config = exportConfig()
-    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${pageTitle}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    if (!pageId) {
+      modal.confirm({
+        title: '请先保存页面',
+        content: '需要保存页面后才能生成分享链接，是否立即保存？',
+        okText: '立即保存',
+        cancelText: '取消',
+        onOk: handleSave,
+      })
+      return
+    }
+    setExportOpen(true)
   }
 
   const handleBack = () => {
@@ -169,6 +174,16 @@ const Editor = () => {
 
       {/* 页面全局设置弹窗 */}
       <PageSettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {/* 导出/分享弹窗 */}
+      {pageId && (
+        <ExportModal
+          open={exportOpen}
+          pageId={pageId}
+          pageTitle={pageTitle}
+          onClose={() => setExportOpen(false)}
+        />
+      )}
     </DndProvider>
   )
 }

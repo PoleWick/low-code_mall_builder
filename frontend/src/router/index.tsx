@@ -15,15 +15,16 @@ const Loading = () => (
   </div>
 )
 
+// initializing 阶段由 AppRoot 全屏 Spin 处理，此处 AppRoot 已保证 initializing=false
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
-  const token = useUserStore((s) => s.token)
-  if (!token) return <Navigate to="/login" replace />
+  const user = useUserStore((s) => s.user)
+  if (!user) return <Navigate to="/login" replace />
   return <>{children}</>
 }
 
 const GuestGuard = ({ children }: { children: React.ReactNode }) => {
-  const token = useUserStore((s) => s.token)
-  if (token) return <Navigate to="/dashboard" replace />
+  const user = useUserStore((s) => s.user)
+  if (user) return <Navigate to="/dashboard" replace />
   return <>{children}</>
 }
 
@@ -34,30 +35,12 @@ const withSuspense = (Component: React.ComponentType) => (
 )
 
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />,
-  },
-  {
-    path: '/login',
-    element: <GuestGuard>{withSuspense(Login)}</GuestGuard>,
-  },
-  {
-    path: '/register',
-    element: <GuestGuard>{withSuspense(Register)}</GuestGuard>,
-  },
-  {
-    path: '/dashboard',
-    element: <AuthGuard>{withSuspense(Dashboard)}</AuthGuard>,
-  },
-  {
-    path: '/editor/:id?',
-    element: <AuthGuard>{withSuspense(Editor)}</AuthGuard>,
-  },
-  {
-    path: '/preview/:id',
-    element: withSuspense(Preview),
-  },
+  { path: '/', element: <Navigate to="/dashboard" replace /> },
+  { path: '/login', element: <GuestGuard>{withSuspense(Login)}</GuestGuard> },
+  { path: '/register', element: <GuestGuard>{withSuspense(Register)}</GuestGuard> },
+  { path: '/dashboard', element: <AuthGuard>{withSuspense(Dashboard)}</AuthGuard> },
+  { path: '/editor/:id?', element: <AuthGuard>{withSuspense(Editor)}</AuthGuard> },
+  { path: '/preview/:id', element: withSuspense(Preview) },
 ])
 
 export default router

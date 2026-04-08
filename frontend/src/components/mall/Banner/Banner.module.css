@@ -2,6 +2,13 @@
   width: 100%;
   overflow: hidden;
   background: #f0f0f0;
+  position: relative;
+}
+
+.slide {
+  width: 100%;
+  cursor: zoom-in;
+  overflow: hidden;
 }
 
 .img {
@@ -9,18 +16,76 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.2s ease;
+}
+
+.slide:hover .img {
+  transform: scale(1.02);
 }
 
 .placeholder {
   width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #f5f5f5;
   color: #bbb;
   font-size: 14px;
 }
 
-.link {
-  display: block;
+/* 轮播圆点样式优化 */
+:global(.slick-dots) li button {
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+:global(.slick-dots) li.slick-active button {
+  background: #fff !important;
+}
+
+/* ===== 灯箱 ===== */
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+  animation: fadeIn 0.2s ease;
+}
+
+.lightboxImg {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  cursor: default;
+  animation: zoomIn 0.2s ease;
+}
+
+.lightboxClose {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+.lightboxClose:hover {
+  color: #fff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.88); opacity: 0 }
+  to   { transform: scale(1);    opacity: 1 }
 }

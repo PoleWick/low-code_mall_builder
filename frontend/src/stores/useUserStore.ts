@@ -3,47 +3,28 @@ import type { User } from '@/types'
 
 interface UserState {
   user: User | null
-  token: string | null
-  isLoggedIn: boolean
-  login: (user: User, token: string) => void
+  initializing: boolean  // 应用启动时验证 session，期间为 true
+
+  setUser: (user: User) => void
+  setInitializing: (v: boolean) => void
   logout: () => void
   updateUser: (user: Partial<User>) => void
 }
 
 const useUserStore = create<UserState>((set) => ({
-  user: (() => {
-    try {
-      const u = localStorage.getItem('user')
-      return u ? JSON.parse(u) : null
-    } catch {
-      return null
-    }
-  })(),
-  token: localStorage.getItem('token'),
-  get isLoggedIn() {
-    return !!this.token
-  },
+  user: null,
+  initializing: true, // 默认 true，AppRoot 完成 profile 检查后置 false
 
-  login: (user, token) => {
-    localStorage.setItem('token', token)
-    localStorage.setItem('user', JSON.stringify(user))
-    set({ user, token })
-  },
+  setUser: (user) => set({ user }),
 
-  logout: () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    set({ user: null, token: null })
-  },
+  setInitializing: (v) => set({ initializing: v }),
 
-  updateUser: (partial) => {
-    set((state) => {
-      if (!state.user) return state
-      const updated = { ...state.user, ...partial }
-      localStorage.setItem('user', JSON.stringify(updated))
-      return { user: updated }
-    })
-  },
+  logout: () => set({ user: null }),
+
+  updateUser: (partial) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...partial } : null,
+    })),
 }))
 
 export default useUserStore

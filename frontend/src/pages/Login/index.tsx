@@ -11,7 +11,7 @@ const { Title, Text } = Typography
 
 const Login = () => {
   const navigate = useNavigate()
-  const login = useUserStore((s) => s.login)
+  const setUser = useUserStore((s) => s.setUser)
   const message = useMessage()
   const [loading, setLoading] = useState(false)
 
@@ -19,7 +19,7 @@ const Login = () => {
     setLoading(true)
     try {
       const res = await authApi.login(values)
-      login(res.user, res.token)
+      setUser(res.user)  // Token 已由后端写入 HttpOnly Cookie
       message.success('登录成功')
       navigate('/dashboard')
     } finally {

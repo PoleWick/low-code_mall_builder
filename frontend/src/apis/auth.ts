@@ -13,8 +13,7 @@ export interface LoginParams {
 }
 
 export interface LoginResult {
-  token: string
-  user: User
+  user: User // Token 由后端写入 HttpOnly Cookie，前端不再接收
 }
 
 export const authApi = {
@@ -26,6 +25,9 @@ export const authApi = {
 
   login: (params: LoginParams) =>
     request.post<never, LoginResult>('/auth/login', params),
+
+  logout: () =>
+    request.post<never, null>('/auth/logout'),
 
   getProfile: () =>
     request.get<never, User>('/auth/profile'),

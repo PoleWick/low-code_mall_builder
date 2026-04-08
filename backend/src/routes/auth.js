@@ -29,6 +29,7 @@ const loginSchema = Joi.object({
 
 router.post('/register', validate(registerSchema), authController.register)
 router.post('/login', validate(loginSchema), authController.login)
+router.post('/logout', authController.logout)
 router.get('/profile', auth, authController.getProfile)
 
 export default router

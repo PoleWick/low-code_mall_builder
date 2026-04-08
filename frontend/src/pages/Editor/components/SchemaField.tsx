@@ -5,7 +5,9 @@ import {
   NumberPicker,
   Switch,
   Select,
+  ArrayItems,
 } from '@formily/antd-v5'
+import { ImageUploader } from './ImageUploader'
 
 export const SchemaField = createSchemaField({
   components: {
@@ -15,5 +17,12 @@ export const SchemaField = createSchemaField({
     Switch,
     Select,
     'Input.TextArea': Input.TextArea,
+    ArrayItems,
+    'ArrayItems.Item': ArrayItems.Item,
+    'ArrayItems.Addition': ArrayItems.Addition,
+    'ArrayItems.Remove': ArrayItems.Remove,
+    'ArrayItems.MoveUp': ArrayItems.MoveUp,
+    'ArrayItems.MoveDown': ArrayItems.MoveDown,
+    ImageUploader,
   },
 })

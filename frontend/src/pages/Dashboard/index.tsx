@@ -5,13 +5,15 @@ import {
 } from 'antd'
 import {
   PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined,
-  CopyOutlined, EyeOutlined, MoreOutlined, LogoutOutlined, UserOutlined
+  CopyOutlined, EyeOutlined, MoreOutlined, LogoutOutlined, UserOutlined,
+  ShareAltOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { pagesApi } from '@/apis'
+import { pagesApi, authApi } from '@/apis'
 import useUserStore from '@/stores/useUserStore'
 import useMessage from '@/hooks/useMessage'
 import type { PageListItem } from '@/types'
+import ExportModal from '@/pages/Editor/components/ExportModal'
 import styles from './Dashboard.module.css'
 
 const { Header, Content } = Layout
@@ -27,6 +29,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false)
   const [keyword, setKeyword] = useState('')
   const [page, setPage] = useState(1)
+  const [shareTarget, setShareTarget] = useState<PageListItem | null>(null)
 
   const fetchPages = useCallback(async () => {
     setLoading(true)
@@ -57,12 +60,17 @@ const Dashboard = () => {
     fetchPages()
   }
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
+  const handleLogout = async () => {
+    try {
+      await authApi.logout() // 通知后端清除 HttpOnly Cookie
+    } finally {
+      logout()
+      navigate('/login')
+    }
   }
 
   return (
+    <>
     <Layout className={styles.layout}>
       <Header className={styles.header}>
         <div className={styles.headerLeft}>
@@ -130,6 +138,7 @@ const Dashboard = () => {
                         key="more"
                         menu={{
                           items: [
+                            { key: 'share', label: '分享', icon: <ShareAltOutlined />, onClick: () => setShareTarget(p) },
                             { key: 'duplicate', label: '复制', icon: <CopyOutlined />, onClick: () => handleDuplicate(p.id) },
                             {
                               key: 'delete', label: (
@@ -164,6 +173,17 @@ const Dashboard = () => {
         </Spin>
       </Content>
     </Layout>
+
+    {/* 分享弹窗 */}
+    {shareTarget && (
+      <ExportModal
+        open={!!shareTarget}
+        pageId={shareTarget.id}
+        pageTitle={shareTarget.title}
+        onClose={() => setShareTarget(null)}
+      />
+    )}
+    </>
   )
 }
 

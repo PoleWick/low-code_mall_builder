@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
 import compression from 'compression'
 import path from 'path'
@@ -20,6 +21,7 @@ const PORT = process.env.PORT || 3001
 
 // 中间件
 app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173', credentials: true }))
+app.use(cookieParser())
 app.use(compression())
 app.use(morgan('dev'))
 app.use(express.json({ limit: '10mb' }))
