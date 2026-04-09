@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Layout, Button, Space, Typography, Input, Spin, Tooltip, App } from 'antd'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { Layout, Button, Space, Typography, Input, Spin, Tooltip, App, Breadcrumb } from 'antd'
 import useMessage from '@/hooks/useMessage'
 import {
   SaveOutlined, EyeOutlined, ExportOutlined,
@@ -31,6 +31,8 @@ const Editor = () => {
   const [saving, setSaving] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+  const [projectId,   setProjectId]   = useState<number | null>(null)
+  const [projectName, setProjectName] = useState<string>('')
 
   // 右侧面板宽度（持久化到 localStorage）
   const [rightWidth, setRightWidth] = useState(
@@ -64,16 +66,17 @@ const Editor = () => {
     setPageTitle, loadConfig, exportConfig, resetEditor,
   } = useEditorStore()
 
-  // 加载已有页面
+  // 编辑器要求必须有页面 ID，无 ID 时重定向
   useEffect(() => {
-    if (!id) {
-      resetEditor()
-      return
-    }
+    if (!id) { navigate('/dashboard', { replace: true }); return }
     setLoading(true)
     pagesApi.getDetail(Number(id))
-      .then((data) => { loadConfig(data.config, data.id, data.title) })
-      .catch(() => { message.error('加载页面失败'); navigate('/dashboard') })
+      .then((data) => {
+        loadConfig(data.config, data.id, data.title)
+        setProjectId(data.project_id)
+        setProjectName(data.project?.name ?? '')
+      })
+      .catch(() => { message.error('\u52A0\u8F7D\u9875\u9762\u5931\u8D25'); navigate('/dashboard') })
       .finally(() => setLoading(false))
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -87,19 +90,15 @@ const Editor = () => {
   }, [isDirty])
 
   const handleSave = async () => {
+    if (!pageId) return
     setSaving(true)
     try {
       const config = exportConfig()
-      if (pageId) {
-        await pagesApi.update(pageId, { title: pageTitle, config })
-      } else {
-        const res = await pagesApi.create({ title: pageTitle, config })
-        navigate(`/editor/${res.id}`, { replace: true })
-      }
-      message.success('保存成功')
+      await pagesApi.update(pageId, { title: pageTitle, config })
+      message.success('\u4FDD\u5B58\u6210\u529F')
       useEditorStore.setState({ isDirty: false })
     } catch {
-      message.error('保存失败')
+      message.error('\u4FDD\u5B58\u5931\u8D25')
     } finally {
       setSaving(false)
     }
@@ -119,18 +118,17 @@ const Editor = () => {
     setExportOpen(true)
   }
 
+  const backTarget = projectId ? `/projects/${projectId}` : '/dashboard'
+
   const handleBack = () => {
-    if (!isDirty) {
-      navigate('/dashboard')
-      return
-    }
+    if (!isDirty) { navigate(backTarget); return }
     modal.confirm({
-      title: '有未保存的修改',
-      content: '当前页面有未保存的内容，直接离开将丢失修改。',
-      okText: '直接离开',
+      title: '\u6709\u672A\u4FDD\u5B58\u7684\u4FEE\u6539',
+      content: '\u5F53\u524D\u9875\u9762\u6709\u672A\u4FDD\u5B58\u7684\u5185\u5BB9\uFF0C\u76F4\u63A5\u79BB\u5F00\u5C06\u4E22\u5931\u4FEE\u6539\u3002',
+      okText: '\u76F4\u63A5\u79BB\u5F00',
       okButtonProps: { danger: true },
-      cancelText: '继续编辑',
-      onOk: () => navigate('/dashboard'),
+      cancelText: '\u7EE7\u7EED\u7F16\u8F91',
+      onOk: () => navigate(backTarget),
     })
   }
 
@@ -149,20 +147,31 @@ const Editor = () => {
         {/* 顶部工具栏 */}
         <Header className={styles.editorHeader}>
           <div className={styles.headerLeft}>
-            <Tooltip title="返回页面管理">
+            <Tooltip title="\u8FD4\u56DE\u9879\u76EE">
               <Button icon={<ArrowLeftOutlined />} type="text" onClick={handleBack} />
             </Tooltip>
-            <Tooltip title="点击修改页面名称" placement="bottom" mouseEnterDelay={0.8}>
+            {projectName && (
+              <Breadcrumb
+                className={styles.breadcrumb}
+                items={[
+                  { title: <Link to="/dashboard">{'\u6211\u7684\u9879\u76EE'}</Link> },
+                  { title: projectId
+                    ? <Link to={`/projects/${projectId}`}>{projectName}</Link>
+                    : projectName },
+                ]}
+              />
+            )}
+            <Tooltip title="\u70B9\u51FB\u4FEE\u6539\u9875\u9762\u540D\u79F0" placement="bottom" mouseEnterDelay={0.8}>
               <Input
                 value={pageTitle}
                 onChange={(e) => setPageTitle(e.target.value)}
                 className={styles.titleInput}
                 variant="borderless"
-                placeholder="未命名页面"
+                placeholder="\u672A\u547D\u540D\u9875\u9762"
               />
             </Tooltip>
             {isDirty && (
-              <Text type="secondary" className={styles.unsavedHint}>● 未保存</Text>
+              <Text type="secondary" className={styles.unsavedHint}>{'● \u672A\u4FDD\u5B58'}</Text>
             )}
           </div>
           <Space>

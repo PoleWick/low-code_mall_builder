@@ -18,6 +18,12 @@
   user-select: none;
 }
 
+.breadcrumb {
+  margin: 0 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
 .headerLeft {
   display: flex;
   align-items: center;

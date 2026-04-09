@@ -4,14 +4,15 @@ import auth from '../middlewares/auth.js'
 
 const router = Router()
 
-router.use(auth)
-
-router.get('/', pageController.getList)
-router.post('/', pageController.create)
+// 公开接口：预览页无需登录
 router.get('/:id', pageController.getDetail)
-router.put('/:id', pageController.update)
-router.delete('/:id', pageController.remove)
+
+// 以下需要登录
+router.use(auth)
+router.get('/',               pageController.getList)
+router.put('/:id',            pageController.update)
+router.delete('/:id',         pageController.remove)
 router.post('/:id/duplicate', pageController.duplicate)
-router.get('/:id/export', pageController.exportPage)
+router.get('/:id/export',     pageController.exportPage)
 
 export default router

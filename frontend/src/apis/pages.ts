@@ -1,33 +1,16 @@
 import request from '@/utils/request'
-import type { Page, PageListItem, PageConfig, PaginatedData } from '@/types'
-
-export interface PageListParams {
-  page?: number
-  pageSize?: number
-  keyword?: string
-}
-
-export interface CreatePageParams {
-  title?: string
-  config?: PageConfig
-}
+import type { Page, PageConfig } from '@/types'
 
 export interface UpdatePageParams {
-  title?: string
+  title?:  string
   config?: PageConfig
-  cover?: string
+  cover?:  string
   status?: 1 | 2
 }
 
 export const pagesApi = {
-  getList: (params?: PageListParams) =>
-    request.get<never, PaginatedData<PageListItem>>('/pages', { params }),
-
   getDetail: (id: number) =>
     request.get<never, Page>(`/pages/${id}`),
-
-  create: (params: CreatePageParams) =>
-    request.post<never, Page>('/pages', params),
 
   update: (id: number, params: UpdatePageParams) =>
     request.put<never, Page>(`/pages/${id}`, params),
@@ -41,4 +24,3 @@ export const pagesApi = {
   export: (id: number) =>
     request.get<never, PageConfig>(`/pages/${id}/export`),
 }
- 

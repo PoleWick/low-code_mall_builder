@@ -6,6 +6,8 @@ import Banner, { bannerSchema, bannerDefaultProps } from '@/components/mall/Bann
 import ProductList, { productListSchema, productListDefaultProps } from '@/components/mall/ProductList'
 import CategoryNav, { categoryNavSchema, categoryNavDefaultProps } from '@/components/mall/CategoryNav'
 import CartEntry, { cartEntrySchema, cartEntryDefaultProps } from '@/components/mall/CartEntry'
+import NavBar, { navBarSchema, navBarDefaultProps } from '@/components/mall/NavBar'
+import OrderConfirm, { orderConfirmSchema, orderConfirmDefaultProps } from '@/components/mall/OrderConfirm'
 import SearchBar, { searchBarSchema, searchBarDefaultProps } from '@/components/mall/SearchBar'
 import Divider, { dividerSchema, dividerDefaultProps } from '@/components/mall/Divider'
 import RichText, { richTextSchema, richTextDefaultProps } from '@/components/mall/RichText'
@@ -50,6 +52,20 @@ export const COMPONENT_REGISTRY: Record<ComponentType, ComponentConfig> = {
     component: CartEntry as FC<AnyProps>,
     schema: cartEntrySchema,
     defaultProps: cartEntryDefaultProps,
+  },
+  NavBar: {
+    label: '底部导航栏',
+    icon: 'AppstoreOutlined',
+    component: NavBar as FC<AnyProps>,
+    schema: navBarSchema,
+    defaultProps: navBarDefaultProps,
+  },
+  OrderConfirm: {
+    label: '订单确认',
+    icon: 'CheckCircleOutlined',
+    component: OrderConfirm as FC<AnyProps>,
+    schema: orderConfirmSchema,
+    defaultProps: orderConfirmDefaultProps,
   },
   SearchBar: {
     label: '搜索框',

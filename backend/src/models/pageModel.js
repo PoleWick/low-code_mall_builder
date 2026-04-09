@@ -1,72 +1,72 @@
 import pool from '../config/db.js'
 
-export const findByUserId = async (userId, { page = 1, pageSize = 10, keyword = '' } = {}) => {
-  const offset = (page - 1) * pageSize
-  const like = `%${keyword}%`
+const parse = (row) => row ? { ...row, config: JSON.parse(row.config) } : null
 
-  const [rows] = await pool.query(
-    `SELECT id, title, cover, status, created_at, updated_at
-     FROM pages WHERE user_id = ? AND title LIKE ?
-     ORDER BY updated_at DESC LIMIT ? OFFSET ?`,
-    [userId, like, pageSize, offset]
-  )
-  const [[{ total }]] = await pool.query(
-    'SELECT COUNT(*) as total FROM pages WHERE user_id = ? AND title LIKE ?',
-    [userId, like]
-  )
-  return { list: rows, total }
+/** 查询某项目下的页面列表（userId 可选：管理用传 userId 做权限过滤，Preview 场景不传） */
+export const findByProjectId = async (projectId, userId = null) => {
+  const sql = userId
+    ? `SELECT id, project_id, title, cover, page_type, is_default, status, created_at, updated_at
+       FROM pages WHERE project_id = ? AND user_id = ?
+       ORDER BY is_default DESC, created_at ASC`
+    : `SELECT id, project_id, title, cover, page_type, is_default, status, created_at, updated_at
+       FROM pages WHERE project_id = ?
+       ORDER BY is_default DESC, created_at ASC`
+  const params = userId ? [projectId, userId] : [projectId]
+  const [rows] = await pool.query(sql, params)
+  return rows
 }
 
+/** 查询单个页面（含 config），可选鉴权 */
 export const findById = async (id, userId = null) => {
   const sql = userId
     ? 'SELECT * FROM pages WHERE id = ? AND user_id = ?'
     : 'SELECT * FROM pages WHERE id = ?'
-  const params = userId ? [id, userId] : [id]
-  const [rows] = await pool.query(sql, params)
-  if (!rows[0]) return null
-  const row = rows[0]
-  return { ...row, config: JSON.parse(row.config) }
+  const [rows] = await pool.query(sql, userId ? [id, userId] : [id])
+  return parse(rows[0])
 }
 
-export const create = async ({ userId, title, config }) => {
+/** 创建页面（批量支持） */
+export const create = async ({ userId, projectId, title, config, pageType = 'custom', isDefault = 0 }) => {
   const [result] = await pool.query(
-    'INSERT INTO pages (user_id, title, config) VALUES (?, ?, ?)',
-    [userId, title, JSON.stringify(config)]
+    `INSERT INTO pages (project_id, user_id, title, config, page_type, is_default)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [projectId, userId, title, JSON.stringify(config), pageType, isDefault]
   )
   return result.insertId
 }
 
+/** 更新页面字段 */
 export const update = async (id, userId, { title, config, cover, status }) => {
-  const fields = []
-  const values = []
-  if (title !== undefined) { fields.push('title = ?'); values.push(title) }
+  const fields = [], values = []
+  if (title  !== undefined) { fields.push('title = ?');  values.push(title) }
   if (config !== undefined) { fields.push('config = ?'); values.push(JSON.stringify(config)) }
-  if (cover !== undefined) { fields.push('cover = ?'); values.push(cover) }
+  if (cover  !== undefined) { fields.push('cover = ?');  values.push(cover) }
   if (status !== undefined) { fields.push('status = ?'); values.push(status) }
-  if (fields.length === 0) return 0
-
+  if (!fields.length) return 0
   values.push(id, userId)
   const [result] = await pool.query(
-    `UPDATE pages SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`,
-    values
+    `UPDATE pages SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`, values
   )
   return result.affectedRows
 }
 
+/** 删除页面（is_default=1 的锁定页无法删除） */
 export const remove = async (id, userId) => {
   const [result] = await pool.query(
-    'DELETE FROM pages WHERE id = ? AND user_id = ?',
+    'DELETE FROM pages WHERE id = ? AND user_id = ? AND is_default = 0',
     [id, userId]
   )
   return result.affectedRows
 }
 
-export const duplicate = async (id, userId) => {
+/** 复制页面（复制为 custom 类型，非锁定） */
+export const duplicate = async (id, userId, projectId) => {
   const page = await findById(id, userId)
   if (!page) return null
   const [result] = await pool.query(
-    'INSERT INTO pages (user_id, title, config) VALUES (?, ?, ?)',
-    [userId, `${page.title} - 副本`, JSON.stringify(page.config)]
+    `INSERT INTO pages (project_id, user_id, title, config, page_type, is_default)
+     VALUES (?, ?, ?, ?, 'custom', 0)`,
+    [projectId, userId, `${page.title} - 副本`, JSON.stringify(page.config)]
   )
   return result.insertId
 }

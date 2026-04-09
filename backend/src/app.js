@@ -7,9 +7,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 
-import authRoutes from './routes/auth.js'
-import pageRoutes from './routes/pages.js'
-import uploadRoutes from './routes/upload.js'
+import authRoutes    from './routes/auth.js'
+import projectRoutes from './routes/projects.js'
+import pageRoutes    from './routes/pages.js'
+import uploadRoutes  from './routes/upload.js'
+import orderRoutes   from './routes/orders.js'
 import errorHandler from './middlewares/errorHandler.js'
 import { testConnection } from './config/db.js'
 
@@ -31,9 +33,11 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 // 路由
-app.use('/api/auth', authRoutes)
-app.use('/api/pages', pageRoutes)
-app.use('/api/upload', uploadRoutes)
+app.use('/api/auth',     authRoutes)
+app.use('/api/projects', projectRoutes)
+app.use('/api/pages',    pageRoutes)
+app.use('/api/upload',   uploadRoutes)
+app.use('/api/orders',   orderRoutes)
 
 // 健康检查
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }))
