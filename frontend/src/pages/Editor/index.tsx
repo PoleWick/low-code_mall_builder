@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Layout, Button, Space, Typography, Input, Spin, Tooltip, App } from 'antd'
 import useMessage from '@/hooks/useMessage'
@@ -20,6 +20,10 @@ import styles from './Editor.module.css'
 const { Header, Sider, Content } = Layout
 const { Text } = Typography
 
+const RIGHT_WIDTH_KEY = 'editor_right_width'
+const RIGHT_MIN = 220
+const RIGHT_MAX = 560
+
 const Editor = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -27,6 +31,31 @@ const Editor = () => {
   const [saving, setSaving] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
+
+  // 右侧面板宽度（持久化到 localStorage）
+  const [rightWidth, setRightWidth] = useState(
+    () => Number(localStorage.getItem(RIGHT_WIDTH_KEY)) || 280
+  )
+  const rightRef = useRef<HTMLDivElement>(null)
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX  = e.clientX
+    const startW  = rightRef.current?.offsetWidth ?? rightWidth
+
+    const onMove = (ev: MouseEvent) => {
+      const w = Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, startW + startX - ev.clientX))
+      setRightWidth(w)
+    }
+    const onUp = (ev: MouseEvent) => {
+      const w = Math.min(RIGHT_MAX, Math.max(RIGHT_MIN, startW + startX - ev.clientX))
+      localStorage.setItem(RIGHT_WIDTH_KEY, String(w))
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [rightWidth])
   const message = useMessage()
   const { modal } = App.useApp()
 
@@ -165,10 +194,15 @@ const Editor = () => {
             <EditorCanvas />
           </Content>
 
-          {/* 右侧：属性配置 */}
-          <Sider width={280} className={styles.rightSider} theme="light">
+          {/* 右侧：属性配置（可拖拽调宽） */}
+          <div
+            ref={rightRef}
+            className={styles.rightSider}
+            style={{ width: rightWidth, minWidth: rightWidth }}
+          >
+            <div className={styles.resizeHandle} onMouseDown={startResize} />
             <PropsPanel />
-          </Sider>
+          </div>
         </Layout>
       </Layout>
 

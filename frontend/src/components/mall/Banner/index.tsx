@@ -79,6 +79,9 @@ export const bannerSchema: ISchema = {
       items: {
         type: 'object',
         'x-component': 'ArrayItems.Item',
+        'x-component-props': {
+          style: { flexDirection: 'column', alignItems: 'stretch', gap: 0 },
+        },
         properties: {
           url: {
             type: 'string',

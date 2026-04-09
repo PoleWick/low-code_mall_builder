@@ -1,157 +1,185 @@
 .wrapper {
-  padding: 12px 8px;
+  padding: 12px 10px 8px;
   background: #fff;
 }
 
 .title {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   margin-bottom: 12px;
-  padding-left: 4px;
+  color: #1a1a1a;
   user-select: none;
 }
 
+/* ===== 横向滚动容器 ===== */
 .grid {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;          /* Firefox 隐藏滚动条 */
 }
+.grid::-webkit-scrollbar { display: none; } /* Chrome/Safari 隐藏滚动条 */
 
 /* ===== 商品卡片 ===== */
 .card {
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #f0f0f0;
-  background: #fafafa;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: visible;             /* 徽章可溢出 */
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
 }
 
+/* ===== 图片区 ===== */
 .imgBox {
-  height: 130px;
-  background: #f5f5f5;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 140px;
+  border-radius: 12px 12px 0 0;
   overflow: hidden;
+  background: #f7f5f2;
+  flex-shrink: 0;
 }
 
 .img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .noImg {
-  color: #bbb;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
   font-size: 12px;
 }
 
+/* 徽章：图片左下角，圆形印章风格 */
 .badge {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  bottom: 8px;
+  left: 8px;
   background: #ff4d4f;
   color: #fff;
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
   user-select: none;
+  box-shadow: 0 1px 4px rgba(255, 77, 79, 0.4);
 }
 
-/* ===== 商品信息区 ===== */
+/* ===== 信息区 ===== */
 .info {
-  padding: 8px 8px 10px;
+  padding: 8px 10px 10px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   flex: 1;
 }
 
 .name {
   font-size: 13px;
-  color: #333;
+  color: #1a1a1a;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 500;
+}
+
+.priceGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .price {
-  color: #ff4d4f;
-  font-weight: 700;
   font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
   line-height: 1;
+  white-space: nowrap;
 }
 
-/* ===== 数量选择 ===== */
-.qtyRow {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin-top: 2px;
+.originalPrice {
+  font-size: 11px;
+  color: #bbb;
+  text-decoration: line-through;
+  white-space: nowrap;
 }
 
-.qtyBtn {
-  width: 26px;
-  height: 26px;
-  border: 1px solid #d9d9d9;
-  background: #fff;
-  border-radius: 4px;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
+/* ===== 数量控件 ===== */
+.qtyControls {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, border-color 0.15s;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.qtyNum {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  min-width: 18px;
+  text-align: center;
+  user-select: none;
+}
+
+/* 圆形按钮基础样式 */
+.qtyCircle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid #d9d9d9;
+  background: #fff;
+  color: #666;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   padding: 0;
-  color: #333;
+  transition: border-color 0.15s, color 0.15s;
   user-select: none;
   flex-shrink: 0;
 }
 
-.qtyBtn:hover:not(:disabled) {
+.qtyCircle:hover:not(:disabled) {
   border-color: #ff4d4f;
   color: #ff4d4f;
 }
 
-.qtyBtn:disabled {
-  color: #d9d9d9;
+.qtyCircle:disabled {
+  opacity: 0.35;
   cursor: not-allowed;
-  background: #fafafa;
 }
 
-.qtyNum {
-  min-width: 28px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  user-select: none;
-}
-
-/* ===== 加入购物车 ===== */
-.addCartBtn {
-  width: 100%;
-  margin-top: 4px;
-  padding: 6px 0;
+/* + 按钮：红色填充 */
+.qtyCircleAdd {
   background: #ff4d4f;
+  border-color: #ff4d4f;
   color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-  user-select: none;
+  font-size: 18px;
 }
 
-.addCartBtn:hover {
-  background: #ff7875;
-}
-
-.addCartBtn:active {
-  background: #d9363e;
+.qtyCircleAdd:hover:not(:disabled) {
+  background: #ff7875 !important;
+  border-color: #ff7875 !important;
+  color: #fff !important;
 }

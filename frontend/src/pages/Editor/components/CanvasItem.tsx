@@ -73,7 +73,7 @@ const CanvasItem = ({ component, index }: Props) => {
         boxShadow: isSelected ? '0 0 0 2px #ff4d4f' : 'none',
       }}
     >
-      <Component {...safeProps} />
+      <Component {...safeProps} __editorMode={true} />
 
       {isSelected && (
         <div className={styles.actionBar}>

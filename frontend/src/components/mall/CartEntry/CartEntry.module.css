@@ -1,10 +1,212 @@
-.btn {
-  position: absolute;
+/* ===== 底部结算栏 ===== */
+.bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+  padding: 8px 12px 8px 16px;
+  gap: 12px;
+  min-height: 60px;
+}
+
+/* 左侧购物袋区域（可点击） */
+.bagWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bagIcon {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.priceInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.totalPrice {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.2;
+}
+
+.emptyHint {
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* 去结算按钮 */
+.checkoutBtn {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 22px;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  z-index: 10;
+  transition: opacity 0.15s;
+  user-select: none;
+}
+
+.checkoutBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.checkoutBtn:not(:disabled):active {
+  opacity: 0.8;
+}
+
+/* ===== 抽屉 ===== */
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.clearBtn {
+  color: #aaa !important;
+  font-size: 13px;
+}
+
+.emptyCart {
+  text-align: center;
+  padding: 32px 0;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* 商品列表 */
+.itemList {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.itemImg {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.itemImgEl {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.itemImgPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: #f5f5f5;
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 6px;
+}
+
+.itemPriceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.itemPrice {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff4d4f;
+}
+
+.itemOriginalPrice {
+  font-size: 12px;
+  color: #aaa;
+  text-decoration: line-through;
+}
+
+/* 抽屉内数量控件 */
+.itemQty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.qtyCircle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid #ff4d4f;
+  background: #fff;
+  color: #ff4d4f;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.qtyCircle:active {
+  background: #fff1f0;
+}
+
+.qtyCircleAdd {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.qtyCircleAdd:active {
+  background: #cf1322;
+}
+
+.qtyNum {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  min-width: 18px;
+  text-align: center;
 }

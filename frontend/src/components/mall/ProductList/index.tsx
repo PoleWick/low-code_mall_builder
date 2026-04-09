@@ -1,11 +1,12 @@
-import { useState } from 'react'
 import type { ISchema } from '@formily/json-schema'
+import useCartStore, { makeCartKey } from '@/stores/useCartStore'
 import styles from './ProductList.module.css'
 
 interface Product {
   id?: number
   name: string
   price: number
+  originalPrice?: number  // 划线原价（可选）
   image: string
   badge?: string
 }
@@ -13,31 +14,32 @@ interface Product {
 interface ProductListProps {
   title?: string
   columns?: number
-  showPrice?: boolean
   products?: Product[]
 }
 
 const DEFAULT_PRODUCTS: Product[] = [
-  { name: '\u793a\u4f8b\u5546\u54c1 A', price: 99.9,  image: '', badge: '\u70ed\u9500' },
-  { name: '\u793a\u4f8b\u5546\u54c1 B', price: 199.0, image: '' },
+  { name: '\u793a\u4f8b\u5546\u54c1 A', price: 12.9, originalPrice: 15.0, image: '', badge: '\u65b0\u54c1' },
+  { name: '\u793a\u4f8b\u5546\u54c1 B', price: 8.9,  originalPrice: 10.0, image: '', badge: '\u70ed\u9500' },
+  { name: '\u793a\u4f8b\u5546\u54c1 C', price: 19.9, image: '' },
 ]
 
-const MAX_COLUMNS = 4
+const MAX_COLUMNS = 3
 
-const ProductList = ({ title = '\u70ed\u9500\u5546\u54c1', columns = 2, showPrice = true, products }: ProductListProps) => {
+const ProductList = ({ title = '\u70ed\u9500\u5546\u54c1', columns = 2, products }: ProductListProps) => {
   const safeProducts = Array.isArray(products) && products.length > 0 ? products : DEFAULT_PRODUCTS
   const safeColumns  = Math.min(Math.max(columns ?? 2, 1), MAX_COLUMNS)
-  const colWidth     = `calc(${100 / safeColumns}% - ${((safeColumns - 1) * 8) / safeColumns}px)`
+  const cardWidth    = `calc(${100 / safeColumns}% - ${8 * (safeColumns - 1) / safeColumns + 1}px)`
 
-  // 各商品数量，key 为 index
-  const [quantities, setQuantities] = useState<Record<number, number>>({})
-
-  const getQty   = (i: number) => quantities[i] ?? 1
-  const changeQty = (i: number, delta: number) => {
-    setQuantities((prev) => {
-      const next = Math.max(1, (prev[i] ?? 1) + delta)
-      return { ...prev, [i]: next }
-    })
+  // 购物车 store
+  const { items, add, decrease } = useCartStore()
+  const getQty = (p: Product) =>
+    items.find((i) => i.key === makeCartKey(p.name, p.price))?.quantity ?? 0
+  const changeQty = (p: Product, delta: number) => {
+    if (delta > 0) {
+      add({ name: p.name, price: p.price, originalPrice: p.originalPrice, image: p.image })
+    } else {
+      decrease(makeCartKey(p.name, p.price))
+    }
   }
 
   return (
@@ -45,8 +47,9 @@ const ProductList = ({ title = '\u70ed\u9500\u5546\u54c1', columns = 2, showPric
       {title && <div className={styles.title}>{title}</div>}
       <div className={styles.grid}>
         {safeProducts.map((p, i) => (
-          <div key={i} className={styles.card} style={{ width: colWidth }}>
-            {/* 商品图片 */}
+          <div key={i} className={styles.card} style={{ width: cardWidth, minWidth: cardWidth }}>
+
+            {/* 商品图片区 */}
             <div className={styles.imgBox}>
               {p.image
                 ? <img src={p.image} alt={p.name} className={styles.img} />
@@ -55,39 +58,43 @@ const ProductList = ({ title = '\u70ed\u9500\u5546\u54c1', columns = 2, showPric
               {p.badge && <span className={styles.badge}>{p.badge}</span>}
             </div>
 
-            {/* 商品信息 */}
+            {/* 商品信息区 */}
             <div className={styles.info}>
               <div className={styles.name}>{p.name || '\u672a\u547d\u540d\u5546\u54c1'}</div>
-              {showPrice && (
-                <div className={styles.price}>
-                  &yen;{(Number(p.price) || 0).toFixed(2)}
-                </div>
-              )}
 
-              {/* 数量选择 */}
-              <div className={styles.qtyRow}>
-                <button
-                  className={styles.qtyBtn}
-                  onClick={() => changeQty(i, -1)}
-                  disabled={getQty(i) <= 1}
-                  aria-label="\u51cf\u5c11\u6570\u91cf"
-                >
-                  −
-                </button>
-                <span className={styles.qtyNum}>{getQty(i)}</span>
-                <button
-                  className={styles.qtyBtn}
-                  onClick={() => changeQty(i, +1)}
-                  aria-label="\u589e\u52a0\u6570\u91cf"
-                >
-                  ＋
-                </button>
+              <div className={styles.priceGroup}>
+                <span className={styles.price}>
+                  &yen;{(Number(p.price) || 0).toFixed(1)}
+                </span>
+                {p.originalPrice && p.originalPrice > p.price && (
+                  <span className={styles.originalPrice}>
+                    &yen;{Number(p.originalPrice).toFixed(1)}
+                  </span>
+                )}
               </div>
 
-              {/* 加入购物车（联动预留） */}
-              <button className={styles.addCartBtn}>
-                {'加入购物车'}
-              </button>
+              {/* 数量控件：下一行居中，qty=0 只显示红圆 +；qty>0 展开 − N + */}
+              <div className={styles.qtyControls}>
+                {getQty(p) > 0 && (
+                  <>
+                    <button
+                      className={styles.qtyCircle}
+                      onClick={() => changeQty(p, -1)}
+                      aria-label="\u51cf\u5c11\u6570\u91cf"
+                    >
+                      &minus;
+                    </button>
+                    <span className={styles.qtyNum}>{getQty(p)}</span>
+                  </>
+                )}
+                <button
+                  className={`${styles.qtyCircle} ${styles.qtyCircleAdd}`}
+                  onClick={() => changeQty(p, +1)}
+                  aria-label="\u589e\u52a0\u6570\u91cf"
+                >
+                  &#43;
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -112,12 +119,6 @@ export const productListSchema: ISchema = {
       'x-component': 'NumberPicker',
       'x-component-props': { min: 1, max: MAX_COLUMNS, placeholder: `\u6700\u591a ${MAX_COLUMNS} \u5217` },
     },
-    showPrice: {
-      type: 'boolean',
-      title: '\u663e\u793a\u4ef7\u683c',
-      'x-decorator': 'FormItem',
-      'x-component': 'Switch',
-    },
     products: {
       type: 'array',
       title: '\u5546\u54c1\u5217\u8868',
@@ -126,6 +127,9 @@ export const productListSchema: ISchema = {
       items: {
         type: 'object',
         'x-component': 'ArrayItems.Item',
+        'x-component-props': {
+          style: { flexDirection: 'column', alignItems: 'stretch', gap: 0 },
+        },
         properties: {
           image: {
             type: 'string',
@@ -142,17 +146,24 @@ export const productListSchema: ISchema = {
           },
           price: {
             type: 'number',
-            title: '\u4ef7\u683c(\u00a5)',
+            title: '\u73b0\u4ef7(\u00a5)',
             'x-decorator': 'FormItem',
             'x-component': 'NumberPicker',
-            'x-component-props': { min: 0, precision: 2, placeholder: '0.00' },
+            'x-component-props': { min: 0, precision: 1, placeholder: '0.0' },
+          },
+          originalPrice: {
+            type: 'number',
+            title: '\u5212\u7ebf\u539f\u4ef7',
+            'x-decorator': 'FormItem',
+            'x-component': 'NumberPicker',
+            'x-component-props': { min: 0, precision: 1, placeholder: '\u4e0d\u586b\u5219\u4e0d\u663e\u793a' },
           },
           badge: {
             type: 'string',
-            title: '\u6807\u7b7e',
+            title: '\u5fbd\u7ae0',
             'x-decorator': 'FormItem',
             'x-component': 'Input',
-            'x-component-props': { placeholder: '\u70ed\u9500 / \u65b0\u54c1 / \u6298\u6263...' },
+            'x-component-props': { placeholder: '\u65b0\u54c1 / \u70ed\u9500 / \u63a8\u8350...' },
           },
           remove: {
             type: 'void',
@@ -174,7 +185,6 @@ export const productListSchema: ISchema = {
 export const productListDefaultProps: ProductListProps = {
   title: '\u70ed\u9500\u5546\u54c1',
   columns: 2,
-  showPrice: true,
   products: DEFAULT_PRODUCTS,
 }
 
