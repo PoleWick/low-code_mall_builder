@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Button, Badge } from 'antd'
 import { DeleteOutlined } from '@ant-design/icons'
+import { Popup } from 'antd-mobile'
 import type { ISchema } from '@formily/json-schema'
 import useCartStore from '@/stores/useCartStore'
+import { usePageLayout } from '@/contexts/PageLayoutContext'
 import styles from './CartEntry.module.css'
 
 interface CartEntryProps {
@@ -19,6 +21,7 @@ const CartEntry = ({
 }: CartEntryProps) => {
   const [open, setOpen] = useState(false)
   const { items, add, decrease, clear } = useCartStore()
+  const { navbarHeight, frameLeft, frameWidth } = usePageLayout()
 
   const totalCount = items.reduce((s, i) => s + (i.quantity || 0), 0)
   const totalPrice = items.reduce((s, i) => s + (Number(i.price) || 0) * (i.quantity || 0), 0)
@@ -27,10 +30,18 @@ const CartEntry = ({
     if (checkoutUrl) window.location.href = checkoutUrl
   }
 
+  /** 预览模式：fixed 悬浮在 NavBar 正上方；编辑模式：relative 随画布流动 */
+  const barStyle = __editorMode
+    ? { position: 'relative' as const, zIndex: 1 }
+    : { position: 'fixed' as const, bottom: navbarHeight, left: frameLeft, width: frameWidth, zIndex: 100 }
+
   return (
     <>
+      {/* 预览模式下的占位撑高，防止内容被 fixed 栏遮挡 */}
+      {!__editorMode && <div style={{ height: 60 }} aria-hidden />}
+
       {/* ===== 底部结算栏 ===== */}
-      <div className={styles.bar} style={__editorMode ? { position: 'relative', zIndex: 1 } : undefined}>
+      <div className={styles.bar} style={barStyle}>
         {/* 购物袋图标 + 总数 */}
         <div className={styles.bagWrap} onClick={() => setOpen(true)}>
           <Badge count={totalCount} size="small" color={buttonColor} offset={[-2, 2]}>
@@ -62,14 +73,18 @@ const CartEntry = ({
         </button>
       </div>
 
-      {/* ===== 自定义底部浮层（替代 Drawer，避免 scroll-lock 抖动） ===== */}
-      {/* 遮罩 */}
-      <div
-        className={`${styles.mask} ${open ? styles.maskVisible : ''}`}
-        onClick={() => setOpen(false)}
-      />
-      {/* 面板 */}
-      <div className={`${styles.sheet} ${open ? styles.sheetOpen : ''}`}>
+      {/* ===== 底部浮层（成熟组件：antd-mobile Popup） ===== */}
+      <Popup
+        visible={open}
+        position="bottom"
+        onClose={() => setOpen(false)}
+        destroyOnClose
+        closeOnMaskClick
+        disableBodyScroll={false}
+        showCloseButton={false}
+        getContainer={() => document.getElementById('preview-container') ?? document.body}
+        bodyStyle={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: 'hidden' }}
+      >
         {/* 面板头部 */}
         <div className={styles.drawerHeader}>
           <span>{'已选商品'}</span>
@@ -128,7 +143,7 @@ const CartEntry = ({
             </div>
           )}
         </div>
-      </div>
+      </Popup>
     </>
   )
 }

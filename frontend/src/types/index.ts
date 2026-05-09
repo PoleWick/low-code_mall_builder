@@ -11,7 +11,7 @@ export interface User {
 export type ComponentType =
   | 'Banner'
   | 'ProductList'
-  | 'CategoryNav'
+  | 'MenuList'
   | 'CartEntry'
   | 'OrderConfirm'
   | 'SearchBar'

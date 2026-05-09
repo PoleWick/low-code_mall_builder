@@ -62,8 +62,10 @@ const useCartStore = create<CartState>()(
       clear: () => set({ items: [] }),
     }),
     {
-      name: 'mall-cart',                              // sessionStorage key
-      storage: createJSONStorage(() => sessionStorage), // 关闭标签页自动清空
+      name: 'mall-cart',
+      // localStorage：跨页面导航持久，解决 iOS Safari sessionStorage 在跳转时被清空的问题
+      // 购物车在支付成功后由 clear() 主动清空，不依赖 storage 生命周期
+      storage: createJSONStorage(() => localStorage),
     }
   )
 )

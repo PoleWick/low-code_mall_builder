@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Typography, Empty } from 'antd'
-import { createForm, onFieldValueChange } from '@formily/core'
+import { createForm, onFormValuesChange } from '@formily/core'
 import { FormProvider } from '@formily/react'
 import { SchemaField } from './SchemaField'
 import { Form } from '@formily/antd-v5'
@@ -22,7 +22,8 @@ const PropsPanel = () => {
       // Immer proxy → 普通对象，防止 Formily 内部 freeze 时触发 Proxy 只读保护
       initialValues: JSON.parse(JSON.stringify(selected.props)),
       effects() {
-        onFieldValueChange('*', () => {
+        // 监听整表 values 变化（含 ArrayItems 增删改），保证画布即时同步
+        onFormValuesChange(() => {
           // Formily values 是 Observable 对象，序列化后再写入 Immer store
           const values = JSON.parse(JSON.stringify(newForm.values))
           updateComponentProps(selected.id, values)

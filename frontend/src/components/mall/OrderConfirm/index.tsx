@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { Button, Divider, Result, Radio, Space } from 'antd'
 import type { ISchema } from '@formily/json-schema'
 import useCartStore from '@/stores/useCartStore'
+import { persistPaymentKeys } from '@/constants/paymentStorage'
 import { ordersApi, paymentsApi } from '@/apis/orders'
 import styles from './OrderConfirm.module.css'
 
@@ -49,14 +50,15 @@ const OrderConfirm = ({
       const order = await ordersApi.create({ items, totalPrice, pageId })
 
       if (payMethod === 'alipay') {
-        // 存当前页 ID，供 PaymentResult 页找回商城页
-        if (pageId) sessionStorage.setItem('checkout_page_id', String(pageId))
+        // 存结算页 ID，供 PaymentResult 找回商城页（双写 storage，iOS 支付宝回跳后 session 常丢）
+        if (pageId) persistPaymentKeys.checkoutPageId(pageId)
         // 不在此处清购物车，等支付成功后由 PaymentResult 页统一清空
         await paymentsApi.redirectToAlipay(order.orderId)
         return // 页面即将跳走，不需要 setLoading(false)
       } else {
         // mock 支付：通知服务端标记为已支付，再展示取餐号
         await paymentsApi.mockPay(order.orderId)
+        persistPaymentKeys.markPostPaymentSync()
         clear()
         setMockResult({
           orderId:      order.orderId,
@@ -69,6 +71,12 @@ const OrderConfirm = ({
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleBackToMall = () => {
+    // 仅打标记，统一由 Preview 页面在恢复可见时消费并同步状态
+    persistPaymentKeys.markPostPaymentSync()
+    window.history.back()
   }
 
   /* ===== mock 支付成功页 ===== */
@@ -84,7 +92,7 @@ const OrderConfirm = ({
             </div>
           }
           subTitle={`\u8BA2\u5355 #${mockResult.orderId} \u00B7 \u5408\u8BA1 \u00A5${mockResult.totalPrice.toFixed(1)}`}
-          extra={<Button onClick={() => window.history.back()}>{'\u8FD4\u56DE\u70B9\u9910'}</Button>}
+          extra={<Button onClick={handleBackToMall}>{'\u8FD4\u56DE\u70B9\u9910'}</Button>}
         />
       </div>
     )

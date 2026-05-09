@@ -57,6 +57,7 @@ CREATE TABLE pages (
 -- ─── 订单表 ───────────────────────────────────────────────────
 CREATE TABLE orders (
   id                   INT PRIMARY KEY AUTO_INCREMENT,
+  project_id           INT DEFAULT NULL COMMENT '商城项目ID，顾客订单归属店铺',
   page_id              INT DEFAULT NULL,
   items                LONGTEXT NOT NULL,
   total_price          DECIMAL(10,2) NOT NULL DEFAULT 0,
@@ -67,6 +68,7 @@ CREATE TABLE orders (
   status               TINYINT NOT NULL DEFAULT 1,
   created_at           DATETIME DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_pickup          (pickup_number),
+  INDEX idx_orders_project_id (project_id),
   INDEX idx_page_id         (page_id),
   INDEX idx_out_trade_no    (alipay_out_trade_no),
   INDEX idx_created_at      (created_at)

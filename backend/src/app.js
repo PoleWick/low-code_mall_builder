@@ -66,6 +66,22 @@ app.use('/api/payments', paymentRoutes)
 // 健康检查
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }))
 
+// 返回本机局域网 IP（预览页生成二维码用）
+app.get('/api/local-ip', (req, res) => {
+  const interfaces = os.networkInterfaces()
+  let localIp = 'localhost'
+  for (const iface of Object.values(interfaces)) {
+    for (const info of (iface ?? [])) {
+      if (info.family === 'IPv4' && !info.internal) {
+        localIp = info.address
+        break
+      }
+    }
+    if (localIp !== 'localhost') break
+  }
+  res.json({ ip: localIp })
+})
+
 // 全局错误处理
 app.use(errorHandler)
 

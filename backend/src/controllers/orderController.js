@@ -19,10 +19,19 @@ export const createOrder = async (req, res, next) => {
     const pickup = genPickupNumber()
     const safeTotal = Number(totalPrice) || 0
 
+    let projectId = null
+    if (pageId) {
+      const [[row]] = await pool.execute(
+        'SELECT project_id FROM pages WHERE id = ? LIMIT 1',
+        [Number(pageId)]
+      )
+      if (row) projectId = row.project_id
+    }
+
     const [result] = await pool.execute(
-      `INSERT INTO orders (page_id, items, total_price, pickup_number)
-       VALUES (?, ?, ?, ?)`,
-      [pageId || null, JSON.stringify(items), safeTotal, pickup]
+      `INSERT INTO orders (project_id, page_id, items, total_price, pickup_number)
+       VALUES (?, ?, ?, ?, ?)`,
+      [projectId, pageId || null, JSON.stringify(items), safeTotal, pickup]
     )
 
     success(res, {
@@ -36,16 +45,30 @@ export const createOrder = async (req, res, next) => {
   }
 }
 
-/** GET /api/orders?pageId=xxx  查询页面订单列表 */
+/** GET /api/orders?pageId=xxx  查询某店铺（项目）下订单列表
+ *  pageId：任意同一 project 下的预览页 ID；列表按 orders.project_id 过滤。
+ */
 export const getOrders = async (req, res, next) => {
   try {
     const { pageId } = req.query
     if (!pageId) return error(res, 'pageId 不能为空', 400)
 
+    const pid = Number(pageId)
+    const [[anchor]] = await pool.execute(
+      'SELECT project_id FROM pages WHERE id = ? LIMIT 1',
+      [pid]
+    )
+    if (!anchor) return error(res, '页面不存在', 404)
+
+    const projectId = anchor.project_id
+
     const [rows] = await pool.execute(
       `SELECT id, pickup_number, total_price, payment_status, created_at, items
-       FROM orders WHERE page_id = ? ORDER BY created_at DESC LIMIT 50`,
-      [Number(pageId)]
+       FROM orders
+       WHERE project_id = ?
+       ORDER BY created_at DESC
+       LIMIT 50`,
+      [projectId]
     )
     const orders = rows.map(o => ({
       ...o,

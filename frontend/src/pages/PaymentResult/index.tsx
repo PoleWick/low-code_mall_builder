@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { paymentsApi } from '@/apis/orders'
 import { pagesApi } from '@/apis/pages'
 import useCartStore from '@/stores/useCartStore'
+import { persistPaymentKeys } from '@/constants/paymentStorage'
 import styles from './PaymentResult.module.css'
 
 const { Text } = Typography
@@ -25,9 +26,9 @@ const PaymentResult = () => {
   const timer     = useRef<ReturnType<typeof setTimeout> | null>(null)
   const clearCart = useCartStore(s => s.clear)
 
-  // 根据 sessionStorage 里的 checkout_page_id 找到商城页 URL
+  // 根据结算页 ID 找商城预览 URL（优先 localStorage：iOS 支付宝回跳后 session 常丢）
   const resolveMallUrl = useCallback(async () => {
-    const checkoutPageId = Number(sessionStorage.getItem('checkout_page_id') || '0')
+    const checkoutPageId = persistPaymentKeys.readCheckoutPageId()
     if (!checkoutPageId) return
     try {
       const page = await pagesApi.getDetail(checkoutPageId)
@@ -43,8 +44,8 @@ const PaymentResult = () => {
     // out_trade_no 格式：mall_{orderId}_{timestamp}
     const match        = outTradeNo.match(/^mall_(\d+)_/)
     const idFromUrl    = match ? Number(match[1]) : null
-    // 兜底：从 sessionStorage 取（直接跳转时存入）
-    const idFromStore  = Number(sessionStorage.getItem('pending_order_id') || '0') || null
+    // 兜底：双 storage 读取（外链返回后 session 可能为空）
+    const idFromStore  = persistPaymentKeys.readPendingOrderId()
     const oid          = idFromUrl ?? idFromStore
 
     if (!oid) { setStatus('failed'); return }
@@ -55,6 +56,12 @@ const PaymentResult = () => {
     return () => { if (timer.current) clearTimeout(timer.current) }
   }, [resolveMallUrl]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const goBackToMall = () => {
+    persistPaymentKeys.clearPendingOrderId()
+    persistPaymentKeys.clearCheckoutPageId()
+    navigate(mallUrl)
+  }
+
   const poll = (oid: number) => {
     pollCount.current += 1
     if (pollCount.current > MAX_POLLS) { setStatus('timeout'); return }
@@ -62,7 +69,8 @@ const PaymentResult = () => {
     paymentsApi.query(oid)
       .then((data) => {
         if (data.paid) {
-          sessionStorage.removeItem('pending_order_id')
+          persistPaymentKeys.clearPendingOrderId()
+          persistPaymentKeys.markPostPaymentSync()
           clearCart()
           setPickupNumber(data.pickupNumber ?? '')
           setTotalPrice(Number(data.totalPrice) || 0)
@@ -116,7 +124,7 @@ const PaymentResult = () => {
           {`\u8BA2\u5355 #${orderId} \u00B7 \u5408\u8BA1 \u00A5${Number(totalPrice).toFixed(2)}`}
         </Text>
         <div className={styles.actions}>
-          <Button type="primary" onClick={() => navigate(mallUrl)}>
+          <Button type="primary" onClick={goBackToMall}>
             {'\u8FD4\u56DE\u70B9\u9910'}
           </Button>
         </div>
@@ -136,7 +144,7 @@ const PaymentResult = () => {
             <Button key="retry" type="primary" onClick={() => { if (orderId) { pollCount.current = 0; poll(orderId) } }}>
               {'\u91CD\u65B0\u67E5\u8BE2'}
             </Button>,
-            <Button key="back" onClick={() => navigate(mallUrl)}>
+            <Button key="back" onClick={goBackToMall}>
               {'\u8FD4\u56DE\u70B9\u9910'}
             </Button>,
           ]}
@@ -153,7 +161,7 @@ const PaymentResult = () => {
         <div className={styles.failTitle}>{'\u652F\u4ED8\u5931\u8D25'}</div>
         <Text type="secondary">{'\u8BA2\u5355\u5DF2\u53D6\u6D88\uFF0C\u8BF7\u91CD\u65B0\u4E0B\u5355'}</Text>
         <div className={styles.actions}>
-          <Button onClick={() => navigate(mallUrl)}>{'\u8FD4\u56DE\u70B9\u9910'}</Button>
+          <Button onClick={goBackToMall}>{'\u8FD4\u56DE\u70B9\u9910'}</Button>
         </div>
       </div>
     </div>

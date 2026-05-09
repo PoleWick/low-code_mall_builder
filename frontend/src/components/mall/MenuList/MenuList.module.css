@@ -1,0 +1,208 @@
+/* ── 容器：左右分栏 ── */
+.wrapper {
+  display: flex;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+/* ── 左侧分类栏 ── */
+.sidebar {
+  width: 80px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #f5f5f5;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.catItem {
+  padding: 14px 8px;
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  background: transparent;
+  line-height: 1.4;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  user-select: none;
+  word-break: break-all;
+}
+
+.catItemActive {
+  background: #fff;
+  font-weight: 600;
+}
+
+/* ── 右侧商品内容 ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #fff;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.content::-webkit-scrollbar {
+  display: none;
+}
+
+.catTitle {
+  padding: 12px 12px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+.empty {
+  padding: 32px 0;
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+}
+
+/* ── 商品行 ── */
+.item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 10px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.imgBox {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imgPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: #eee;
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ── 商品信息 ── */
+.info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desc {
+  font-size: 11px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.price {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.originalPrice {
+  font-size: 11px;
+  color: #bbb;
+  text-decoration: line-through;
+}
+
+/* ── 数量控件 ── */
+.qtyControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.qtyCircle {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, opacity 0.15s;
+  user-select: none;
+}
+
+/* 扩大触摸区域 */
+.qtyCircle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+}
+
+.qtyCircle:active {
+  opacity: 0.7;
+}
+
+.qtyCircleAdd {
+  color: #fff !important;
+}
+
+.qtyNum {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  min-width: 16px;
+  text-align: center;
+}

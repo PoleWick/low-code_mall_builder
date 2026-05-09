@@ -4,7 +4,6 @@ import type { ISchema } from '@formily/json-schema'
 
 import Banner, { bannerSchema, bannerDefaultProps } from '@/components/mall/Banner'
 import ProductList, { productListSchema, productListDefaultProps } from '@/components/mall/ProductList'
-import CategoryNav, { categoryNavSchema, categoryNavDefaultProps } from '@/components/mall/CategoryNav'
 import CartEntry, { cartEntrySchema, cartEntryDefaultProps } from '@/components/mall/CartEntry'
 import OrderConfirm, { orderConfirmSchema, orderConfirmDefaultProps } from '@/components/mall/OrderConfirm'
 import NavBar, { navBarSchema, navBarDefaultProps } from '@/components/mall/NavBar'
@@ -13,6 +12,7 @@ import SearchBar, { searchBarSchema, searchBarDefaultProps } from '@/components/
 import Divider, { dividerSchema, dividerDefaultProps } from '@/components/mall/Divider'
 import RichText, { richTextSchema, richTextDefaultProps } from '@/components/mall/RichText'
 import ImageBlock, { imageBlockSchema, imageBlockDefaultProps } from '@/components/mall/ImageBlock'
+import MenuList, { menuListSchema, menuListDefaultProps } from '@/components/mall/MenuList'
 import OrderList, { orderListSchema, orderListDefaultProps } from '@/components/mall/OrderList'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,12 +41,12 @@ export const COMPONENT_REGISTRY: Record<ComponentType, ComponentConfig> = {
     schema: productListSchema,
     defaultProps: productListDefaultProps,
   },
-  CategoryNav: {
-    label: '分类导航',
-    icon: 'UnorderedListOutlined',
-    component: CategoryNav as FC<AnyProps>,
-    schema: categoryNavSchema,
-    defaultProps: categoryNavDefaultProps,
+  MenuList: {
+    label: '点单列表',
+    icon: 'MenuOutlined',
+    component: MenuList as FC<AnyProps>,
+    schema: menuListSchema,
+    defaultProps: menuListDefaultProps,
   },
   CartEntry: {
     label: '购物车入口',

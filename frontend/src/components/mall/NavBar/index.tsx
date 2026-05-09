@@ -1,16 +1,17 @@
-import { useMemo } from 'react'
 import {
   HomeOutlined, ShopOutlined, UnorderedListOutlined,
   UserOutlined, HeartOutlined, StarOutlined,
   GiftOutlined, TagOutlined, PhoneOutlined, InfoCircleOutlined,
 } from '@ant-design/icons'
+import { TabBar } from 'antd-mobile'
 import type { ISchema } from '@formily/json-schema'
+import { usePageLayout } from '@/contexts/PageLayoutContext'
 import styles from './NavBar.module.css'
 
 export interface NavItem {
-  icon:    string   // 图标名称，如 "HomeOutlined"
-  label:   string
-  pageId?: number
+  icon:     string   // 图标名称，如 "HomeOutlined"
+  label:    string
+  pageUrl?: string   // 跳转路径，如 "/preview/11"（由 PagePicker 生成）
 }
 
 /** 支持的图标名称 → 组件映射 */
@@ -63,60 +64,95 @@ const NavBar = ({
   activeColor  = '#ff4d4f',
   __editorMode = false,
 }: NavBarProps) => {
-  const safeItems = Array.isArray(items) && items.length > 0 ? items : DEFAULT_ITEMS
+  // Formily ArrayItems 在增删过程中可能出现短暂的 null/undefined 占位，先做清洗避免渲染崩溃
+  const normalizedItems = Array.isArray(items)
+    ? items.filter((it): it is NavItem => !!it && typeof it === 'object')
+    : []
+  const safeItems = normalizedItems.length > 0 ? normalizedItems : DEFAULT_ITEMS
+  const { frameLeft, frameWidth } = usePageLayout()
 
-  // 从当前 URL 解析出活跃页面 ID（/preview/:id）
-  const activePageId = useMemo(() => {
-    const match = window.location.pathname.match(/\/preview\/(\d+)/)
-    return match ? Number(match[1]) : null
-  }, [])
+  // 当前路径，用于高亮匹配 pageUrl
+  const currentPath = window.location.pathname
 
   const handleClick = (item: NavItem) => {
-    if (!item.pageId) return
-    window.location.href = `/preview/${item.pageId}`
+    if (!item.pageUrl) return
+    window.location.href = item.pageUrl
   }
 
-  const navBar = (
-    <nav
+  const getItemKey = (item: NavItem, i: number) =>
+    item.pageUrl ? `url:${item.pageUrl}` : `idx:${i}`
+
+  const activeIndex = safeItems.findIndex((it) => !!it.pageUrl && it.pageUrl === currentPath)
+  const activeKey = activeIndex >= 0 ? getItemKey(safeItems[activeIndex], activeIndex) : ''
+
+  const previewNavBar = (
+    <div
       className={styles.bar}
-      style={__editorMode ? { position: 'relative', zIndex: 1 } : { position: 'fixed', bottom: 0, left: 0, right: 0 }}
+      style={{ position: 'fixed', bottom: 0, left: frameLeft, width: frameWidth, zIndex: 50 }}
     >
-      {safeItems.map((item, i) => {
-        const isActive = item.pageId != null && item.pageId === activePageId
-        return (
-          <button
-            key={i}
-            className={styles.tab}
-            style={{ color: isActive ? activeColor : undefined }}
-            onClick={() => handleClick(item)}
-          >
-            <span className={styles.icon}>
-              {item.icon && isImageUrl(item.icon)
-                ? <img src={item.icon} alt={item.label} className={styles.iconImg} />
-                : ICON_MAP[item.icon] ?? ICON_MAP[DEFAULT_ICON_NAME]!}
-            </span>
-            <span
-              className={styles.label}
-              style={isActive ? { color: activeColor } : undefined}
-            >
-              {item.label || `Tab ${i + 1}`}
-            </span>
-            {isActive && (
-              <span className={styles.dot} style={{ background: activeColor }} />
-            )}
-          </button>
-        )
-      })}
-    </nav>
+      <TabBar
+        activeKey={activeKey}
+        onChange={(key) => {
+          const target = safeItems.find((it, i) => getItemKey(it, i) === key)
+          if (target) handleClick(target)
+        }}
+        style={
+          {
+            '--active-color': activeColor,
+            '--active-title-color': activeColor,
+            '--active-icon-color': activeColor,
+            '--inactive-title-color': '#999',
+            '--inactive-icon-color': '#999',
+          } as Record<string, string>
+        }
+      >
+        {safeItems.map((item, i) => {
+          const isActive = !!item.pageUrl && currentPath === item.pageUrl
+          return (
+            <TabBar.Item
+              key={getItemKey(item, i)}
+              title={<span style={{ color: isActive ? activeColor : '#999' }}>{item.label || `Tab ${i + 1}`}</span>}
+              icon={
+                <span className={styles.icon} style={{ color: isActive ? activeColor : '#999' }}>
+                  {item.icon && isImageUrl(item.icon)
+                    ? <img src={item.icon} alt={item.label} className={styles.iconImg} />
+                    : ICON_MAP[item.icon] ?? ICON_MAP[DEFAULT_ICON_NAME]!}
+                </span>
+              }
+            />
+          )
+        })}
+      </TabBar>
+    </div>
   )
 
-  if (__editorMode) return navBar
+  // 编辑器模式：使用无内部状态的静态渲染，保证配置修改后 UI 立即同步
+  if (__editorMode) {
+    return (
+      <div className={styles.bar} style={{ position: 'relative', zIndex: 1 }}>
+        <div className={styles.editorTabs}>
+          {safeItems.map((item, i) => (
+            <div key={`editor-${i}-${item.label}-${item.icon}-${item.pageUrl || ''}`} className={styles.editorTab}>
+              <span className={styles.icon} style={i === 0 ? { color: activeColor } : { color: '#999' }}>
+                {item.icon && isImageUrl(item.icon)
+                  ? <img src={item.icon} alt={item.label} className={styles.iconImg} />
+                  : ICON_MAP[item.icon] ?? ICON_MAP[DEFAULT_ICON_NAME]!}
+              </span>
+              <span className={styles.label} style={i === 0 ? { color: activeColor } : { color: '#999' }}>
+                {item.label || `Tab ${i + 1}`}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
       {/* 占位，防止页面内容被固定导航栏遮住（56 + 安全区） */}
       <div style={{ height: 'calc(56px + env(safe-area-inset-bottom, 0px))' }} aria-hidden />
-      {navBar}
+      {previewNavBar}
     </>
   )
 }
@@ -146,22 +182,24 @@ export const navBarSchema: ISchema = {
           icon: {
             type: 'string',
             title: '图标',
+            default: DEFAULT_ICON_NAME,
             'x-decorator': 'FormItem',
             'x-component': 'NavIconPicker',
           },
           label: {
             type: 'string',
             title: '\u6807\u7B7E',
+            default: '新标签',
             'x-decorator': 'FormItem',
             'x-component': 'Input',
             'x-component-props': { placeholder: '\u9996\u9875' },
           },
-          pageId: {
-            type: 'number',
-            title: '\u8DF3\u8F6C\u9875\u9762 ID',
+          pageUrl: {
+            type: 'string',
+            title: '跳转页面',
+            default: '',
             'x-decorator': 'FormItem',
-            'x-component': 'NumberPicker',
-            'x-component-props': { min: 1, precision: 0, placeholder: '\u9875\u9762 ID' },
+            'x-component': 'PagePicker',
           },
           remove: {
             type: 'void',
@@ -174,6 +212,13 @@ export const navBarSchema: ISchema = {
           type: 'void',
           title: '\u6DFB\u52A0 Tab',
           'x-component': 'ArrayItems.Addition',
+          'x-component-props': {
+            defaultValue: {
+              icon: DEFAULT_ICON_NAME,
+              label: '新标签',
+              pageUrl: '',
+            },
+          },
         },
       },
     },

@@ -1,3 +1,4 @@
+import { persistPaymentKeys } from '@/constants/paymentStorage'
 import request from '@/utils/request'
 import type { CartItem } from '@/stores/useCartStore'
 
@@ -52,7 +53,7 @@ export const paymentsApi = {
     const { payUrl } = await request.post<never, { payUrl: string; orderId: number; outTradeNo: string }>(
       `/payments/alipay/${orderId}`, {}
     )
-    sessionStorage.setItem('pending_order_id', String(orderId))
+    persistPaymentKeys.pendingOrderId(orderId)
     window.location.href = payUrl   // 直接跳到支付宝，不经过 Vite
   },
 
